@@ -1,40 +1,55 @@
 ---
-description: Complete the implementation phase of Spec-Driven Development (SDD) by coordinating with developer agents, enforcing the project CONSTITUTION and feature design guidelines, or generating code during a single session.
+description: Execute the implementation plan by processing and executing all tasks defined in tasks.md
 scripts:
-  sh: scripts/bash/check-implement-prerequisites.sh --json
+  sh: scripts/bash/check-implementation-prerequisites.sh --json
+  ps: scripts/powershell/check-implementation-prerequisites.ps1 -Json
 ---
 
-Given the context provided as an argument, do this:
+Given the current feature context, do this:
 
-1. Run {SCRIPT} from repo root and parse: FEATURE_DIR and AVAILABLE_SPECS (files). All paths must be absolute.
-2. Load and analyze available specification artifacts:
-   - Always read tasks.md for detailed implementation plan
-   - Always read CONSTITUTION for governance rules
-   - IF EXISTS: Read data-model.md for entities
-   - IF EXISTS: Read contracts/ for API endpoints
-   - IF EXISTS: Read research.md for technical decisions
-   - IF EXISTS: Read quickstart.md for test scenarios
+1. Run `{SCRIPT}` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute.
 
-   Note: Not all projects have all documents. For example:
-   - CLI tools might not have contracts/
-   - Simple libraries might not need data-model.md
+2. Load and analyze the implementation context:
+   - **REQUIRED**: Read tasks.md for the complete task list and execution plan
+   - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
+   - **IF EXISTS**: Read data-model.md for entities and relationships
+   - **IF EXISTS**: Read contracts/ for API specifications and test requirements
+   - **IF EXISTS**: Read research.md for technical decisions and constraints
+   - **IF EXISTS**: Read quickstart.md for integration scenarios
 
-3. Start implementing each phase of the feature as outlined in the tasks.md document, step by step.
-   - Skip completed tasks (marked ✅)
-   - Resume from last in_progress task (marked 🔄)
-   - Start with first pending task if fresh start
-   - IF AGENTS/TOOLS ARE AVAILABLE: Prefer delegation to available agents/tools with explicit commands and inputs
-   - IF AGENTS/TOOLS ARE AVAILABLE: Task marked with [P] within same developing phase can be called simultaneously
-   - IF AGENTS/TOOLS ARE AVAILABLE: Provide them with the minimal required context from the available design documents
-   - Resolve tasks only when requirements is clear
-   - Handle edge cases by seeking clarification when specs are ambiguous, documenting assumptions and yielding back to user when unable to resolve
-   - Commit each completed step in avaiable version control system
+3. Parse tasks.md structure and extract:
+   - **Task phases**: Setup, Tests, Core, Integration, Polish
+   - **Task dependencies**: Sequential vs parallel execution rules
+   - **Task details**: ID, description, file paths, parallel markers [P]
+   - **Execution flow**: Order and dependency requirements
 
-4. After each step:
-   - Update tasks.md entries with 🔄 (in progress) or ✅ (completed) or ❌ (blocked)
-   - Run verification (tests/build)
+4. Execute implementation following the task plan:
+   - **Phase-by-phase execution**: Complete each phase before moving to the next
+   - **Respect dependencies**: Run sequential tasks in order, parallel tasks [P] can run together  
+   - **Follow TDD approach**: Execute test tasks before their corresponding implementation tasks
+   - **File-based coordination**: Tasks affecting the same files must run sequentially
+   - **Validation checkpoints**: Verify each phase completion before proceeding
 
-Context for implementation: {ARGS}
+5. Implementation execution rules:
+   - **Setup first**: Initialize project structure, dependencies, configuration
+   - **Tests before code**: If you need to write tests for contracts, entities, and integration scenarios
+   - **Core development**: Implement models, services, CLI commands, endpoints
+   - **Integration work**: Database connections, middleware, logging, external services
+   - **Polish and validation**: Unit tests, performance optimization, documentation
 
-Default CONSTITUTION path: memory/constitution.md
-Never violate CONSTITUTION.
+6. Progress tracking and error handling:
+   - Report progress after each completed task
+   - Halt execution if any non-parallel task fails
+   - For parallel tasks [P], continue with successful tasks, report failed ones
+   - Provide clear error messages with context for debugging
+   - Suggest next steps if implementation cannot proceed
+   - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
+
+7. Completion validation:
+   - Verify all required tasks are completed
+   - Check that implemented features match the original specification
+   - Validate that tests pass and coverage meets requirements
+   - Confirm the implementation follows the technical plan
+   - Report final status with summary of completed work
+
+Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/tasks` first to regenerate the task list.

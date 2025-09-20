@@ -31,7 +31,8 @@ rewrite_paths() {
   sed -E \
     -e 's@(/?)memory/@.specify/memory/@g' \
     -e 's@(/?)scripts/@.specify/scripts/@g' \
-    -e 's@(/?)templates/@.specify/templates/@g'
+    -e 's@(/?)templates/@.specify/templates/@g' \
+    -e 's@(/?)hooks/@.specify/hooks/@g'
 }
 
 generate_commands() {
@@ -110,6 +111,7 @@ build_variant() {
   fi
   
   [[ -d templates ]] && { mkdir -p "$SPEC_DIR/templates"; find templates -type f -not -path "templates/commands/*" -exec cp --parents {} "$SPEC_DIR"/ \; ; echo "Copied templates -> .specify/templates"; }
+  [[ -d hooks ]] && { cp -r hooks "$SPEC_DIR/"; echo "Copied hooks -> .specify"; }
   # Inject variant into plan-template.md within .specify/templates if present
   local plan_tpl="$base_dir/.specify/templates/plan-template.md"
   if [[ -f "$plan_tpl" ]]; then
@@ -161,6 +163,22 @@ build_variant() {
       mkdir -p "$base_dir/.codex/commands"
       generate_commands codex md "\$ARGUMENTS" "$base_dir/.codex/commands" "$script" ;;
   esac
+  
+  # Replace agent-specific placeholders in constitution checklist
+  local checklist="$base_dir/.specify/memory/constitution_update_checklist.md"
+  if [[ -f "$checklist" ]]; then
+    case $agent in
+      claude)
+        sed -i 's@__COMMANDS_PLAN_PATH__@/.claude/commands/plan.md@g; s@__COMMANDS_TASKS_PATH__@/.claude/commands/tasks.md@g; s@__AGENT_CONFIG_FILE__@/CLAUDE.md@g' "$checklist" ;;
+      copilot)
+        sed -i 's@__COMMANDS_PLAN_PATH__@/.github/prompts/plan.prompt.md@g; s@__COMMANDS_TASKS_PATH__@/.github/prompts/tasks.prompt.md@g; s@__AGENT_CONFIG_FILE__@/.github/copilot-instructions.md@g' "$checklist" ;;
+      gemini)
+        sed -i 's@__COMMANDS_PLAN_PATH__@/.gemini/commands/plan.toml@g; s@__COMMANDS_TASKS_PATH__@/.gemini/commands/tasks.toml@g; s@__AGENT_CONFIG_FILE__@/GEMINI.md@g' "$checklist" ;;
+      cursor)
+        sed -i 's@__COMMANDS_PLAN_PATH__@/.cursor/commands/plan.md@g; s@__COMMANDS_TASKS_PATH__@/.cursor/commands/tasks.md@g; s@__AGENT_CONFIG_FILE__@/CURSOR.md@g' "$checklist" ;;
+    esac
+  fi
+  
   ( cd "$base_dir" && zip -r "../spec-kit-template-${agent}-${script}-${NEW_VERSION}.zip" . )
   echo "Created spec-kit-template-${agent}-${script}-${NEW_VERSION}.zip"
 }
